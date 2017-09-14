@@ -95,7 +95,8 @@ func (w *Worktree) PullContext(ctx context.Context, o *PullOptions) error {
 		}
 
 		if !ff {
-			return fmt.Errorf("non-fast-forward update")
+			fmt.Println("FAST FOR WERR")
+			//return fmt.Errorf("non-fast-forward update")
 		}
 	}
 
@@ -263,14 +264,14 @@ func (w *Worktree) Reset(opts *ResetOptions) error {
 	}
 
 	if opts.Mode == MergeReset {
-		unstaged, err := w.containsUnstagedChanges()
-		if err != nil {
-			return err
-		}
+		//unstaged, err := w.containsUnstagedChanges()
+		//if err != nil {
+	//		return err
+		//}
 
-		if unstaged {
-			return ErrUnstaggedChanges
-		}
+		//if unstaged {
+		//	return ErrUnstaggedChanges
+		//}
 	}
 
 	if err := w.setHEADCommit(opts.Commit); err != nil {
@@ -292,7 +293,9 @@ func (w *Worktree) Reset(opts *ResetOptions) error {
 		}
 	}
 
-	if opts.Mode == MergeReset || opts.Mode == HardReset {
+	if opts.Mode == HardReset {
+	//if opts.Mode == MergeReset || opts.Mode == HardReset {
+// TODO
 		if err := w.resetWorktree(t); err != nil {
 			return err
 		}
@@ -313,6 +316,8 @@ func (w *Worktree) resetIndex(t *object.Tree) error {
 	}
 
 	for _, ch := range changes {
+		fmt.Println("A Changes are ")
+		fmt.Println(fmt.Sprintf("%v", ch))
 		a, err := ch.Action()
 		if err != nil {
 			return err
@@ -321,11 +326,15 @@ func (w *Worktree) resetIndex(t *object.Tree) error {
 		var name string
 		var e *object.TreeEntry
 
+		fmt.Println(fmt.Sprintf("SWITHC A : %v",a))
 		switch a {
 		case merkletrie.Modify, merkletrie.Insert:
 			name = ch.To.String()
 			e, err = t.FindEntry(name)
 			if err != nil {
+				return err
+			}
+			if err := w.checkoutChange(ch, t, idx); err != nil {
 				return err
 			}
 		case merkletrie.Delete:
@@ -360,6 +369,8 @@ func (w *Worktree) resetWorktree(t *object.Tree) error {
 	}
 
 	for _, ch := range changes {
+		fmt.Println("Changes are ")
+		fmt.Println(fmt.Sprintf("%v", ch))
 		if err := w.checkoutChange(ch, t, idx); err != nil {
 			return err
 		}
